@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_ecommerce_app/src/pages/home_page.dart';
 import 'package:flutter_ecommerce_app/src/pages/shopping_cart_page.dart';
+import 'package:flutter_ecommerce_app/src/pages/login_page.dart';
 import 'package:flutter_ecommerce_app/src/themes/light_color.dart';
 import 'package:flutter_ecommerce_app/src/themes/theme.dart';
 import 'package:flutter_ecommerce_app/src/widgets/BottomNavigationBar/bottom_navigation_bar.dart';
@@ -24,6 +26,13 @@ class _MainPageState extends State<MainPage> {
 
   void _openDrawer() {
     _scaffoldKey.currentState?.openDrawer();
+  }
+
+  void _logout() async {
+    await FirebaseAuth.instance.signOut(); // Deloghează utilizatorul din Firebase
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => LoginPage()), // Redirecționează către pagina de login
+    );
   }
 
   Widget _appBar() {
@@ -174,6 +183,12 @@ class _MainPageState extends State<MainPage> {
                 title: Text('Shop'),
                 onTap: _navigateToShop,
               ),
+              Divider(), // Divider între opțiuni și butonul de delogare
+              ListTile(
+                leading: Icon(Icons.logout),
+                title: Text('Logout'),
+                onTap: _logout, // Deloghează și redirecționează
+              ),
             ],
           ),
         ),
@@ -220,7 +235,7 @@ class _MainPageState extends State<MainPage> {
                 bottom: 0,
                 right: 0,
                 child: CustomBottomNavigationBar(
-                  onIconPressedCallback: onBottomIconPressed, // Ensure the correct callback is used
+                  onIconPressedCallback: onBottomIconPressed, // Asigură-te că callback-ul corect este folosit
                 ),
               ),
             ],

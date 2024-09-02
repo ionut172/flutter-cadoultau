@@ -1,5 +1,5 @@
-name: flutter_ecommerce_app
-description: A new Flutter project.
+name: Cadoul Tau
+description: Nu ai timp? Ia un cadou.
 
 version: 1.0.0+1
 
@@ -16,7 +16,7 @@ dependencies:
   # Google Fonts pentru utilizarea fonturilor Google
   google_fonts: ^2.1.0
 
-  firebase_core: ^2.0.0
+  firebase_core: ^2.24.2
   firebase_auth: ^4.0.0
   google_sign_in: ^6.0.0
 
