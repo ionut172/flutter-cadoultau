@@ -8,9 +8,9 @@ import 'package:flutter_ecommerce_app/src/widgets/title_text.dart';
 import 'package:flutter_ecommerce_app/src/widgets/extentions.dart';
 
 class MainPage extends StatefulWidget {
-  MainPage({Key key, this.title}) : super(key: key);
-
   final String title;
+
+  MainPage({Key? key, this.title = 'Default Title'}) : super(key: key);
 
   @override
   _MainPageState createState() => _MainPageState();
@@ -18,6 +18,14 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   bool isHomePageSelected = true;
+
+  // Create a GlobalKey for the Scaffold
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  void _openDrawer() {
+    _scaffoldKey.currentState?.openDrawer();
+  }
+
   Widget _appBar() {
     return Container(
       padding: AppTheme.padding,
@@ -26,75 +34,82 @@ class _MainPageState extends State<MainPage> {
         children: <Widget>[
           RotatedBox(
             quarterTurns: 4,
-            child: _icon(Icons.sort, color: Colors.black54),
+            child: _icon(
+              Icons.sort,
+              color: Colors.black54,
+              onPressed: _openDrawer, // Call the drawer opening method
+            ),
           ),
           ClipRRect(
             borderRadius: BorderRadius.all(Radius.circular(13)),
             child: Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).backgroundColor,
+                color: Theme.of(context).colorScheme.background,
                 boxShadow: <BoxShadow>[
                   BoxShadow(
-                      color: Color(0xfff8f8f8),
-                      blurRadius: 10,
-                      spreadRadius: 10),
+                    color: Color(0xfff8f8f8),
+                    blurRadius: 10,
+                    spreadRadius: 10,
+                  ),
                 ],
               ),
               child: Image.asset("assets/user.png"),
             ),
-          ).ripple(() {}, borderRadius: BorderRadius.all(Radius.circular(13)))
+          ).ripple(() {}, borderRadius: BorderRadius.all(Radius.circular(13))),
         ],
       ),
     );
   }
 
-  Widget _icon(IconData icon, {Color color = LightColor.iconColor}) {
+  Widget _icon(IconData icon, {Color color = LightColor.iconColor, required VoidCallback onPressed}) {
     return Container(
       padding: EdgeInsets.all(10),
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(13)),
-          color: Theme.of(context).backgroundColor,
-          boxShadow: AppTheme.shadow),
-      child: Icon(
-        icon,
-        color: color,
+        borderRadius: BorderRadius.all(Radius.circular(13)),
+        color: Theme.of(context).colorScheme.background,
+        boxShadow: AppTheme.shadow,
       ),
-    ).ripple(() {}, borderRadius: BorderRadius.all(Radius.circular(13)));
+      child: IconButton(
+        icon: Icon(icon, color: color),
+        onPressed: onPressed,
+      ),
+    );
   }
 
   Widget _title() {
     return Container(
-        margin: AppTheme.padding,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                TitleText(
-                  text: isHomePageSelected ? 'Our' : 'Shopping',
-                  fontSize: 27,
-                  fontWeight: FontWeight.w400,
-                ),
-                TitleText(
-                  text: isHomePageSelected ? 'Products' : 'Cart',
-                  fontSize: 27,
-                  fontWeight: FontWeight.w700,
-                ),
-              ],
-            ),
-            Spacer(),
-            !isHomePageSelected
-                ? Container(
+      margin: AppTheme.padding,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              TitleText(
+                text: isHomePageSelected ? 'Our' : 'Shopping',
+                fontSize: 27,
+                fontWeight: FontWeight.w400,
+              ),
+              TitleText(
+                text: isHomePageSelected ? 'Products' : 'Cart',
+                fontSize: 27,
+                fontWeight: FontWeight.w700,
+              ),
+            ],
+          ),
+          Spacer(),
+          !isHomePageSelected
+              ? Container(
                   padding: EdgeInsets.all(10),
                   child: Icon(
-                      Icons.delete_outline,
-                      color: LightColor.orange,
-                    ),
+                    Icons.delete_outline,
+                    color: LightColor.orange,
+                  ),
                 ).ripple(() {}, borderRadius: BorderRadius.all(Radius.circular(13)))
-                : SizedBox()
-          ],
-        ));
+              : SizedBox(),
+        ],
+      ),
+    );
   }
 
   void onBottomIconPressed(int index) {
@@ -109,56 +124,107 @@ class _MainPageState extends State<MainPage> {
     }
   }
 
+  void _navigateToHome() {
+    setState(() {
+      isHomePageSelected = true;
+    });
+    Navigator.pop(context); // Close the drawer
+  }
+
+  void _navigateToShop() {
+    setState(() {
+      isHomePageSelected = false;
+    });
+    Navigator.pop(context); // Close the drawer
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          fit: StackFit.expand,
-          children: <Widget>[
-            SingleChildScrollView(
-              child: Container(
-                height: AppTheme.fullHeight(context) - 50,
+    return GestureDetector(
+      onTap: () {
+        if (_scaffoldKey.currentState!.isDrawerOpen) {
+          Navigator.pop(context); // Close the drawer if tapped outside
+        }
+      },
+      child: Scaffold(
+        key: _scaffoldKey, // Attach the GlobalKey to the Scaffold
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Color(0xfffbfbfb),
-                      Color(0xfff7f7f7),
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+                  color: LightColor.lightBlue,
+                ),
+                child: Text(
+                  'Menu',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
                   ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    _appBar(),
-                    _title(),
-                    Expanded(
-                      child: AnimatedSwitcher(
-                        duration: Duration(milliseconds: 300),
-                        switchInCurve: Curves.easeInToLinear,
-                        switchOutCurve: Curves.easeOutBack,
-                        child: isHomePageSelected
-                            ? MyHomePage()
-                            : Align(
-                                alignment: Alignment.topCenter,
-                                child: ShoppingCartPage(),
-                              ),
+              ),
+              ListTile(
+                leading: Icon(Icons.home),
+                title: Text('Home'),
+                onTap: _navigateToHome,
+              ),
+              ListTile(
+                leading: Icon(Icons.shopping_cart),
+                title: Text('Shop'),
+                onTap: _navigateToShop,
+              ),
+            ],
+          ),
+        ),
+        body: SafeArea(
+          child: Stack(
+            fit: StackFit.expand,
+            children: <Widget>[
+              SingleChildScrollView(
+                child: Container(
+                  height: AppTheme.fullHeight(context) - 50,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xfffbfbfb),
+                        Color(0xfff7f7f7),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      _appBar(),
+                      _title(),
+                      Expanded(
+                        child: AnimatedSwitcher(
+                          duration: Duration(milliseconds: 300),
+                          switchInCurve: Curves.easeInToLinear,
+                          switchOutCurve: Curves.easeOutBack,
+                          child: isHomePageSelected
+                              ? MyHomePage()
+                              : Align(
+                                  alignment: Alignment.topCenter,
+                                  child: ShoppingCartPage(),
+                                ),
+                        ),
                       ),
-                    )
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: CustomBottomNavigationBar(
-                onIconPresedCallback: onBottomIconPressed,
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: CustomBottomNavigationBar(
+                  onIconPressedCallback: onBottomIconPressed, // Ensure the correct callback is used
+                ),
               ),
-            )
-          ],
+            ],
+          ),
         ),
       ),
     );

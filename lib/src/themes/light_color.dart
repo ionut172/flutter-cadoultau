@@ -22,4 +22,6 @@ class LightColor {
 
   static const Color black = Color(0xff20262C);
   static const Color lightblack = Color(0xff5F5F60);
+  static const Color primaryColor = Color(0xff123456); // Replace with your desired color
+
 }

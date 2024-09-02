@@ -7,8 +7,9 @@ import 'package:flutter_ecommerce_app/src/widgets/extentions.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
-  final ValueChanged<Product> onSelected;
-  ProductCard({Key key, this.product, this.onSelected}) : super(key: key);
+  final Function(Product) onSelected;
+
+  ProductCard({required Key key, required this.product, required this.onSelected}) : super(key: key);
 
 //   @override
 //   _ProductCardState createState() => _ProductCardState();

@@ -8,7 +8,7 @@ import 'package:flutter_ecommerce_app/src/widgets/product_icon.dart';
 import 'package:flutter_ecommerce_app/src/widgets/extentions.dart';
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key? key, this.title = "Home Page"}) : super(key: key);
 
   final String title;
 
@@ -22,7 +22,7 @@ class _MyHomePageState extends State<MyHomePage> {
       padding: EdgeInsets.all(10),
       decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(13)),
-          color: Theme.of(context).backgroundColor,
+          color: Theme.of(context).colorScheme.background,
           boxShadow: AppTheme.shadow),
       child: Icon(
         icon,
@@ -45,9 +45,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 onSelected: (model) {
                   setState(() {
                     AppData.categoryList.forEach((item) {
-                      item.isSelected = false;
+                      item?.isSelected = false;
                     });
-                    model.isSelected = true;
+                    model?.isSelected = true;
                   });
                 },
               ),
@@ -72,18 +72,20 @@ class _MyHomePageState extends State<MyHomePage> {
         scrollDirection: Axis.horizontal,
         children: AppData.productList
             .map(
-              (product) => ProductCard(
-                product: product,
-                onSelected: (model) {
-                  setState(() {
-                    AppData.productList.forEach((item) {
-                      item.isSelected = false;
-                    });
-                    model.isSelected = true;
-                  });
-                },
-              ),
-            )
+  (product) => ProductCard(
+    key: ValueKey(product.id), // Unique key based on the product's ID
+    product: product,
+    onSelected: (model) {
+      setState(() {
+        AppData.productList.forEach((item) {
+          item.isSelected = false;
+        });
+        model.isSelected = true;
+      });
+    },
+  ),
+)
+
             .toList(),
       ),
     );

@@ -6,7 +6,7 @@ import 'package:flutter_ecommerce_app/src/widgets/title_text.dart';
 import 'package:flutter_ecommerce_app/src/widgets/extentions.dart';
 
 class ProductDetailPage extends StatefulWidget {
-  ProductDetailPage({Key key}) : super(key: key);
+  ProductDetailPage({Key? key}) : super(key: key);  // Make the key nullable
 
   @override
   _ProductDetailPageState createState() => _ProductDetailPageState();
@@ -14,8 +14,8 @@ class ProductDetailPage extends StatefulWidget {
 
 class _ProductDetailPageState extends State<ProductDetailPage>
     with TickerProviderStateMixin {
-  AnimationController controller;
-  Animation<double> animation;
+  late AnimationController controller;
+  late Animation<double> animation;
   @override
   void initState() {
     super.initState();
@@ -69,7 +69,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     double size = 20,
     double padding = 10,
     bool isOutLine = false,
-    Function onPressed,
+    Function? onPressed,  
   }) {
     return Container(
       height: 40,
@@ -81,8 +81,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             color: LightColor.iconColor,
             style: isOutLine ? BorderStyle.solid : BorderStyle.none),
         borderRadius: BorderRadius.all(Radius.circular(13)),
-        color:
-            isOutLine ? Colors.transparent : Theme.of(context).backgroundColor,
+       color: isOutLine ? Colors.transparent : Theme.of(context).colorScheme.surface,
+
+
         boxShadow: <BoxShadow>[
           BoxShadow(
               color: Color(0xfff8f8f8),
@@ -287,7 +288,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             style: !isSelected ? BorderStyle.solid : BorderStyle.none),
         borderRadius: BorderRadius.all(Radius.circular(13)),
         color:
-            isSelected ? LightColor.orange : Theme.of(context).backgroundColor,
+            isSelected ? LightColor.orange : Theme.of(context).colorScheme.background,
       ),
       child: TitleText(
         text: text,

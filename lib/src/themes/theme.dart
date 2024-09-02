@@ -4,16 +4,31 @@ import 'light_color.dart';
 
 class AppTheme {
   const AppTheme();
-  static ThemeData lightTheme = ThemeData(
-      backgroundColor: LightColor.background,
-      primaryColor: LightColor.background,
-      cardTheme: CardTheme(color: LightColor.background),
-      textTheme: TextTheme(bodyText1: TextStyle(color: LightColor.black)),
+
+  static final ThemeData lightTheme = ThemeData(
+    colorScheme: ColorScheme.light(
+      primary: LightColor.primaryColor,
+      background: LightColor.background,
+      onPrimary: LightColor.iconColor,
+      surface: LightColor.lightGrey,
+      onBackground: LightColor.black,
+    ),
+    cardTheme: CardTheme(color: LightColor.background),
+    textTheme: TextTheme(bodyLarge: TextStyle(color: LightColor.black)),
+    iconTheme: IconThemeData(color: LightColor.iconColor),
+    dividerColor: LightColor.lightGrey,
+    primaryTextTheme: TextTheme(bodyLarge: TextStyle(color: LightColor.titleTextColor)),
+    appBarTheme: AppBarTheme(
+      backgroundColor: LightColor.background, // Use this to set AppBar background color
+      elevation: 0,
       iconTheme: IconThemeData(color: LightColor.iconColor),
-      bottomAppBarColor: LightColor.background,
-      dividerColor: LightColor.lightGrey,
-      primaryTextTheme:
-          TextTheme(bodyText1: TextStyle(color: LightColor.titleTextColor)));
+    ),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor: LightColor.background, // Set the bottom app bar color here
+      selectedItemColor: LightColor.primaryColor,
+      unselectedItemColor: LightColor.iconColor,
+    ),
+  );
 
   static TextStyle titleStyle =
       const TextStyle(color: LightColor.titleTextColor, fontSize: 16);
