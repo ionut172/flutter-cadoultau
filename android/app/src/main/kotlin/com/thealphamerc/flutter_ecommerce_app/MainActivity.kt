@@ -1,4 +1,4 @@
-package com.thealphamerc.flutter_ecommerce_app
+package com.thealphamerc.cadoultau
 
 import io.flutter.embedding.android.FlutterActivity
 

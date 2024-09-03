@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_ecommerce_app/src/pages/splash_screen.dart'; 
-import 'package:flutter_ecommerce_app/src/pages/mainPage.dart';
-import 'package:flutter_ecommerce_app/src/pages/register_page.dart'; // Import RegisterPage
+import 'package:cadoultau/src/pages/splash_screen.dart'; 
+import 'package:cadoultau/src/pages/mainPage.dart';
+import 'package:cadoultau/src/pages/register_page.dart'; // Import RegisterPage
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_ecommerce_app/src/pages/login_page.dart';
+import 'package:cadoultau/src/pages/login_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'src/themes/theme.dart';
 

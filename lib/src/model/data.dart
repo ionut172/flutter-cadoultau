@@ -1,5 +1,5 @@
-import 'package:flutter_ecommerce_app/src/model/category.dart';
-import 'package:flutter_ecommerce_app/src/model/product.dart';
+import 'package:cadoultau/src/model/category.dart';
+import 'package:cadoultau/src/model/product.dart';
 
 class AppData {
   static List<Product> productList = [

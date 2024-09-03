@@ -1,7 +1,7 @@
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
-import 'package:flutter_ecommerce_app/main.dart';
+import 'package:cadoultau/main.dart';
 
 class SplashScreen extends StatelessWidget {
   @override

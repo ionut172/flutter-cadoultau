@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecommerce_app/src/themes/light_color.dart';
+import 'package:cadoultau/src/themes/light_color.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class TitleText extends StatelessWidget {

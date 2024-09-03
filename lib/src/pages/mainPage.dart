@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_ecommerce_app/src/pages/home_page.dart';
-import 'package:flutter_ecommerce_app/src/pages/shopping_cart_page.dart';
-import 'package:flutter_ecommerce_app/src/pages/login_page.dart';
-import 'package:flutter_ecommerce_app/src/themes/light_color.dart';
-import 'package:flutter_ecommerce_app/src/themes/theme.dart';
-import 'package:flutter_ecommerce_app/src/widgets/BottomNavigationBar/bottom_navigation_bar.dart';
-import 'package:flutter_ecommerce_app/src/widgets/title_text.dart';
-import 'package:flutter_ecommerce_app/src/widgets/extentions.dart';
+import 'package:cadoultau/src/pages/home_page.dart';
+import 'package:cadoultau/src/pages/shopping_cart_page.dart';
+import 'package:cadoultau/src/pages/login_page.dart';
+import 'package:cadoultau/src/themes/light_color.dart';
+import 'package:cadoultau/src/themes/theme.dart';
+import 'package:cadoultau/src/widgets/BottomNavigationBar/bottom_navigation_bar.dart';
+import 'package:cadoultau/src/widgets/title_text.dart';
+import 'package:cadoultau/src/widgets/extentions.dart';
 
 class MainPage extends StatefulWidget {
   final String title;
