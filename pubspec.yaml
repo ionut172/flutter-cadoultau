@@ -1,4 +1,4 @@
-name: Cadoul Tau
+name: flutter_ecommerce_app
 description: Nu ai timp? Ia un cadou.
 
 version: 1.0.0+1
@@ -15,11 +15,12 @@ dependencies:
 
   # Google Fonts pentru utilizarea fonturilor Google
   google_fonts: ^2.1.0
-
   firebase_core: ^2.24.2
   firebase_auth: ^4.0.0
   google_sign_in: ^6.0.0
-
+  animated_splash_screen: ^1.2.0  # Add this line
+  carousel_slider: ^5.0.0  # Add the carousel slider package
+  cloud_firestore: ^4.14.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

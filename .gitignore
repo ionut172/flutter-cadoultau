@@ -9,6 +9,7 @@
 .history
 .svn/
 ./ios/Runner/GoogleService-Info.plist
+.firebase.json
 # IntelliJ related
 *.iml
 *.ipr
