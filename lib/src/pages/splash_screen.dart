@@ -8,7 +8,7 @@ class SplashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedSplashScreen(
       splash: Image.asset('assets/nike_logo.png'), // Ensure the logo file exists in assets
-      nextScreen: AuthWrapper(),  // AuthWrapper will handle login state
+      nextScreen: LoginPage(),  // AuthWrapper will handle login state
       splashTransition: SplashTransition.fadeTransition,
       duration: 3000,
     );

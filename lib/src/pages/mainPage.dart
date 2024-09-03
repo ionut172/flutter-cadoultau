@@ -12,7 +12,7 @@ import 'package:cadoultau/src/widgets/extentions.dart';
 class MainPage extends StatefulWidget {
   final String title;
 
-  MainPage({Key? key, this.title = 'Default Title'}) : super(key: key);
+  MainPage({Key? key, this.title = 'Cadoul Tau'}) : super(key: key);
 
   @override
   _MainPageState createState() => _MainPageState();
