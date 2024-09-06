@@ -1,6 +1,5 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:cadoultau/src/model/data.dart';
 import 'package:cadoultau/src/themes/light_color.dart';
 import 'package:cadoultau/src/themes/theme.dart';
 import 'package:cadoultau/src/widgets/product_card.dart';
@@ -31,65 +30,65 @@ class _MyHomePageState extends State<MyHomePage> {
     ).ripple(() {}, borderRadius: BorderRadius.all(Radius.circular(13)));
   }
 
-  Widget _categoryWidget() {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 10),
-      width: AppTheme.fullWidth(context),
-      height: 80,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: AppData.categoryList
-            .map(
-              (category) => ProductIcon(
-                model: category,
-                onSelected: (model) {
-                  setState(() {
-                    AppData.categoryList.forEach((item) {
-                      item?.isSelected = false;
-                    });
-                    model?.isSelected = true;
-                  });
-                },
-              ),
-            )
-            .toList(),
-      ),
-    );
-  }
+  // Widget _categoryWidget() {
+  //   return Container(
+  //     margin: EdgeInsets.symmetric(vertical: 10),
+  //     width: AppTheme.fullWidth(context),
+  //     height: 80,
+  //     child: ListView(
+  //       scrollDirection: Axis.horizontal,
+  //       children: AppData.categoryList
+  //           .map(
+  //             (category) => ProductIcon(
+  //               model: category,
+  //               onSelected: (model) {
+  //                 setState(() {
+  //                   AppData.categoryList.forEach((item) {
+  //                     item?.isSelected = false;
+  //                   });
+  //                   model?.isSelected = true;
+  //                 });
+  //               },
+  //             ),
+  //           )
+  //           .toList(),
+  //     ),
+  //   );
+  // }
 
-  Widget _productWidget() {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 10),
-      width: AppTheme.fullWidth(context),
-      height: AppTheme.fullWidth(context) * .7,
-      child: GridView(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 1,
-            childAspectRatio: 4 / 3,
-            mainAxisSpacing: 30,
-            crossAxisSpacing: 20),
-        padding: EdgeInsets.only(left: 20),
-        scrollDirection: Axis.horizontal,
-        children: AppData.productList
-            .map(
-  (product) => ProductCard(
-    key: ValueKey(product.id), // Unique key based on the product's ID
-    product: product,
-    onSelected: (model) {
-      setState(() {
-        AppData.productList.forEach((item) {
-          item.isSelected = false;
-        });
-        model.isSelected = true;
-      });
-    },
-  ),
-)
+//   Widget _productWidget() {
+//     return Container(
+//       margin: EdgeInsets.symmetric(vertical: 10),
+//       width: AppTheme.fullWidth(context),
+//       height: AppTheme.fullWidth(context) * .7,
+//       child: GridView(
+//         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+//             crossAxisCount: 1,
+//             childAspectRatio: 4 / 3,
+//             mainAxisSpacing: 30,
+//             crossAxisSpacing: 20),
+//         padding: EdgeInsets.only(left: 20),
+//         scrollDirection: Axis.horizontal,
+//         children: AppData.productList
+//             .map(
+//   (product) => ProductCard(
+//     key: ValueKey(product.id), // Unique key based on the product's ID
+//     product: product,
+//     onSelected: (model) {
+//       setState(() {
+//         AppData.productList.forEach((item) {
+//           item.isSelected = false;
+//         });
+//         model.isSelected = true;
+//       });
+//     },
+//   ),
+// )
 
-            .toList(),
-      ),
-    );
-  }
+//             .toList(),
+//       ),
+//     );
+//   }
 
   Widget _search() {
     return Container(
@@ -133,8 +132,8 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             _search(),
-            _categoryWidget(),
-            _productWidget(),
+            // _categoryWidget(),
+            // _productWidget(),
           ],
         ),
       ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cadoultau/src/model/data.dart';
 import 'package:cadoultau/src/themes/light_color.dart';
 import 'package:cadoultau/src/themes/theme.dart';
 import 'package:cadoultau/src/widgets/title_text.dart';
@@ -124,18 +123,18 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     );
   }
 
-  Widget _categoryWidget() {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 0),
-      width: AppTheme.fullWidth(context),
-      height: 80,
-      child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children:
-              AppData.showThumbnailList.map((x) => _thumbnail(x)).toList()),
-    );
-  }
+  // Widget _categoryWidget() {
+  //   return Container(
+  //     margin: EdgeInsets.symmetric(vertical: 0),
+  //     width: AppTheme.fullWidth(context),
+  //     height: 80,
+  //     child: Row(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         children:
+  //             AppData.showThumbnailList.map((x) => _thumbnail(x)).toList()),
+  //   );
+  // }
 
   Widget _thumbnail(String image) {
     return AnimatedBuilder(
@@ -356,7 +355,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           fontSize: 14,
         ),
         SizedBox(height: 20),
-        Text(AppData.description),
+        // Text(AppData.description),
       ],
     );
   }
@@ -391,7 +390,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 children: <Widget>[
                   _appBar(),
                   _productImage(),
-                  _categoryWidget(),
+                  // _categoryWidget(),
                 ],
               ),
               _detailWidget()

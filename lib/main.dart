@@ -7,11 +7,10 @@ import 'package:cadoultau/src/pages/add_person_page.dart';
 import 'package:cadoultau/src/config/route.dart';
 import 'package:cadoultau/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';  // Add this import
+import 'package:cloud_firestore/cloud_firestore.dart'; // Add this for Firestore
 import 'package:cadoultau/src/pages/login_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'src/themes/theme.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,9 +30,9 @@ class MyApp extends StatelessWidget {
           Theme.of(context).textTheme,
         ),
       ),
-      debugShowCheckedModeBanner: true,
-      home: SplashScreen(),  // Start with the splash screen
-      routes: Routes.getRoute(),  // Use the route method
+      debugShowCheckedModeBanner: false,
+      home: SplashScreen(),
+      routes: Routes.getRoute(),
     );
   }
 }
@@ -44,14 +43,18 @@ class AuthWrapper extends StatelessWidget {
   Future<bool> _checkIfPeopleExist(User? user) async {
     if (user == null) return false;
 
-    DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
+    try {
+      DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
 
-    if (userDoc.exists && userDoc.data() != null) {
-      Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
-      if (data.containsKey('favorite_people') && data['favorite_people'] != null) {
-        List<dynamic> favoritePeople = data['favorite_people'] as List<dynamic>;
-        return favoritePeople.isNotEmpty;
+      if (userDoc.exists && userDoc.data() != null) {
+        Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
+        if (data.containsKey('favorite_people') && data['favorite_people'] is List && data['favorite_people'] != null) {
+          List<dynamic> favoritePeople = data['favorite_people'] as List<dynamic>;
+          return favoritePeople.isNotEmpty;
+        }
       }
+    } catch (e) {
+      print('Eroare la verificarea persoanelor favorite: $e');
     }
     return false;
   }
@@ -68,22 +71,27 @@ class AuthWrapper extends StatelessWidget {
         } else if (snapshot.hasData) {
           return FutureBuilder<bool>(
             future: _checkIfPeopleExist(snapshot.data),
-            builder: (context, AsyncSnapshot<bool> peopleSnapshot) {
+            builder: (context, peopleSnapshot) {
               if (peopleSnapshot.connectionState == ConnectionState.waiting) {
                 return Scaffold(
                   body: Center(child: CircularProgressIndicator()),
                 );
               } else if (peopleSnapshot.hasData && peopleSnapshot.data == true) {
-                return MainPage();  // If people exist, go to MainPage
+                return MainPage();  // Dacă există persoane, mergi la MainPage
+              } else if (peopleSnapshot.hasError) {
+                return Scaffold(
+                  body: Center(child: Text('Eroare: ${peopleSnapshot.error}')),
+                );
               } else {
-                return AddPersonPage();  // If no people, go to AddPersonPage
+                return AddPersonPage();  // Dacă nu există persoane, mergi la AddPersonPage
               }
             },
           );
         } else {
-          return LoginPage();  // If not authenticated, go to LoginPage
+          return LoginPage();  // Dacă nu este autentificat, mergi la LoginPage
         }
       },
     );
   }
 }
+

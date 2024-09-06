@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cadoultau/src/pages/home_page.dart';
-import 'package:cadoultau/src/pages/shopping_cart_page.dart';
+import 'package:cadoultau/src/pages/gift_page.dart';
 import 'package:cadoultau/src/pages/login_page.dart';
 import 'package:cadoultau/src/themes/light_color.dart';
 import 'package:cadoultau/src/themes/theme.dart';
 import 'package:cadoultau/src/widgets/BottomNavigationBar/bottom_navigation_bar.dart';
 import 'package:cadoultau/src/widgets/title_text.dart';
 import 'package:cadoultau/src/widgets/extentions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
 class MainPage extends StatefulWidget {
   final String title;
@@ -20,18 +21,39 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   bool isHomePageSelected = true;
-
-  // Create a GlobalKey for the Scaffold
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  // Obține UID-ul utilizatorului logat
+  User? currentUser = FirebaseAuth.instance.currentUser;
 
   void _openDrawer() {
     _scaffoldKey.currentState?.openDrawer();
   }
 
+  void _navigateToHome() {
+    setState(() {
+      isHomePageSelected = true;
+    });
+    Navigator.pop(context);
+  }
+
+  void _navigateToShop() {
+    setState(() {
+      isHomePageSelected = false;
+    });
+    Navigator.pop(context);
+  }
+
+  void onBottomIconPressed(int index) {
+    setState(() {
+      isHomePageSelected = index == 0;
+    });
+  }
+
   void _logout() async {
-    await FirebaseAuth.instance.signOut(); // Deloghează utilizatorul din Firebase
+    await FirebaseAuth.instance.signOut();
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => LoginPage()), // Redirecționează către pagina de login
+      MaterialPageRoute(builder: (context) => LoginPage()),
     );
   }
 
@@ -43,11 +65,7 @@ class _MainPageState extends State<MainPage> {
         children: <Widget>[
           RotatedBox(
             quarterTurns: 4,
-            child: _icon(
-              Icons.sort,
-              color: Colors.black54,
-              onPressed: _openDrawer, // Call the drawer opening method
-            ),
+            child: _icon(Icons.sort, color: Colors.black54, onPressed: _openDrawer),
           ),
           ClipRRect(
             borderRadius: BorderRadius.all(Radius.circular(13)),
@@ -94,57 +112,174 @@ class _MainPageState extends State<MainPage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              TitleText(
-                text: isHomePageSelected ? 'Our' : 'Shopping',
-                fontSize: 27,
-                fontWeight: FontWeight.w400,
-              ),
-              TitleText(
-                text: isHomePageSelected ? 'Products' : 'Cart',
-                fontSize: 27,
-                fontWeight: FontWeight.w700,
-              ),
+              TitleText(text: 'Evenimentele', fontSize: 27, fontWeight: FontWeight.w400),
+              TitleText(text: 'Următoare', fontSize: 27, fontWeight: FontWeight.w700),
             ],
           ),
           Spacer(),
-          !isHomePageSelected
-              ? Container(
-                  padding: EdgeInsets.all(10),
-                  child: Icon(
-                    Icons.delete_outline,
-                    color: LightColor.orange,
-                  ),
-                ).ripple(() {}, borderRadius: BorderRadius.all(Radius.circular(13)))
-              : SizedBox(),
         ],
       ),
     );
   }
 
-  void onBottomIconPressed(int index) {
-    if (index == 0 || index == 1) {
-      setState(() {
-        isHomePageSelected = true;
-      });
-    } else {
-      setState(() {
-        isHomePageSelected = false;
-      });
+  // Funcția pentru preluarea datelor despre persoanele favorite din Firestore
+  Widget _eventList() {
+    if (currentUser == null) {
+      return Center(child: Text('Nu sunteți autentificat.'));
     }
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection('users').doc(currentUser!.uid).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Eroare la încărcarea datelor'));
+        } else if (!snapshot.hasData || snapshot.data == null) {
+          return Center(child: Text('Nu există date disponibile'));
+        }
+
+        // Extragem datele utilizatorului
+        Map<String, dynamic> userData = snapshot.data!.data() as Map<String, dynamic>;
+        List<dynamic> favoritePeople = userData['favorite_people'] ?? [];
+
+        if (favoritePeople.isEmpty) {
+          return Center(child: Text('Nu există persoane favorite'));
+        }
+
+        // Afișăm lista persoanelor favorite sub formă de slider
+        return CarouselSlider(
+          options: CarouselOptions(
+            height: 250.0,  // Poți ajusta înălțimea cardului dacă e nevoie
+            enlargeCenterPage: true,
+            viewportFraction: 0.6,  // Afișează 25% din următorul card
+            autoPlay: false,
+            enableInfiniteScroll: false,
+          ),
+          items: favoritePeople.map((person) {
+            if (person.containsKey('basic_info')) {
+              Map<String, dynamic> personData = person['basic_info'] ?? {};
+              return _eventCard(personData);
+            }
+            return Container();
+          }).toList(),
+        );
+      },
+    );
   }
 
-  void _navigateToHome() {
-    setState(() {
-      isHomePageSelected = true;
-    });
-    Navigator.pop(context); // Close the drawer
+  // Widget pentru a afișa cardul cu datele unei persoane
+  Widget _eventCard(Map<String, dynamic> personData) {
+  String firstName = personData['firstName'] ?? 'N/A';
+  String lastName = personData['lastName'] ?? 'N/A';
+  String relation = personData['relation'] ?? 'Relație necunoscută';
+  String birthdateString = personData['birthdate'] ?? '';
+
+  if (birthdateString.isEmpty) {
+    return Container();
   }
 
-  void _navigateToShop() {
-    setState(() {
-      isHomePageSelected = false;
-    });
-    Navigator.pop(context); // Close the drawer
+  DateTime birthdate = DateTime.parse(birthdateString);
+  int daysUntilBirthday = daysUntilNextBirthday(birthdate);
+
+  return Card(
+    margin: EdgeInsets.symmetric(horizontal: 8, vertical: 16),  // Ajustează margin pentru a lărgi cardul
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+    elevation: 4,
+    child: Padding(
+      padding: const EdgeInsets.all(15),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,  // Centrează pe verticală
+        crossAxisAlignment: CrossAxisAlignment.center, // Centrează pe orizontală
+        children: [
+          Text('$firstName $lastName', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          SizedBox(height: 8),
+          Text('$relation', style: TextStyle(fontSize: 16)),
+          SizedBox(height: 8),
+          Text('Aniversare in: $daysUntilBirthday zile', style: TextStyle(fontSize: 16)),
+          SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => GiftPage()));
+            },
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,  // Setează butonul la alb
+              backgroundColor: LightColor.lightBlue  // Textul va fi negru
+            ),
+            child: Text('Trimite un cadou'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+
+  // Funcție pentru a calcula numărul de zile până la următoarea aniversare
+  int daysUntilNextBirthday(DateTime birthdate) {
+    DateTime now = DateTime.now();
+    DateTime nextBirthday = DateTime(now.year, birthdate.month, birthdate.day);
+
+    if (nextBirthday.isBefore(now)) {
+      nextBirthday = DateTime(now.year + 1, birthdate.month, birthdate.day);
+    }
+
+    return nextBirthday.difference(now).inDays;
+  }
+
+  // Funcția pentru meniul personalizat
+  Widget _buildDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          DrawerHeader(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [LightColor.lightBlue, LightColor.darkBlue],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.person, size: 40, color: LightColor.lightBlue),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  'Bine ai venit!',
+                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  currentUser?.email ?? 'Utilizator',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ],
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.home, color: LightColor.lightBlue),
+            title: Text('Home'),
+            onTap: _navigateToHome,
+          ),
+          ListTile(
+            leading: Icon(Icons.shopping_cart, color: LightColor.lightBlue),
+            title: Text('Shop'),
+            onTap: _navigateToShop,
+          ),
+          Divider(),
+          ListTile(
+            leading: Icon(Icons.logout, color: Colors.red),
+            title: Text('Logout'),
+            onTap: _logout,
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -152,46 +287,12 @@ class _MainPageState extends State<MainPage> {
     return GestureDetector(
       onTap: () {
         if (_scaffoldKey.currentState!.isDrawerOpen) {
-          Navigator.pop(context); // Close the drawer if tapped outside
+          Navigator.pop(context);
         }
       },
       child: Scaffold(
-        key: _scaffoldKey, // Attach the GlobalKey to the Scaffold
-        drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  color: LightColor.lightBlue,
-                ),
-                child: Text(
-                  'Menu',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.home),
-                title: Text('Home'),
-                onTap: _navigateToHome,
-              ),
-              ListTile(
-                leading: Icon(Icons.shopping_cart),
-                title: Text('Shop'),
-                onTap: _navigateToShop,
-              ),
-              Divider(), // Divider între opțiuni și butonul de delogare
-              ListTile(
-                leading: Icon(Icons.logout),
-                title: Text('Logout'),
-                onTap: _logout, // Deloghează și redirecționează
-              ),
-            ],
-          ),
-        ),
+        key: _scaffoldKey,
+        drawer: _buildDrawer(),  // Meniul personalizat
         body: SafeArea(
           child: Stack(
             fit: StackFit.expand,
@@ -201,10 +302,7 @@ class _MainPageState extends State<MainPage> {
                   height: AppTheme.fullHeight(context) - 50,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        Color(0xfffbfbfb),
-                        Color(0xfff7f7f7),
-                      ],
+                      colors: [Color(0xfffbfbfb), Color(0xfff7f7f7)],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
@@ -214,19 +312,8 @@ class _MainPageState extends State<MainPage> {
                     children: <Widget>[
                       _appBar(),
                       _title(),
-                      Expanded(
-                        child: AnimatedSwitcher(
-                          duration: Duration(milliseconds: 300),
-                          switchInCurve: Curves.easeInToLinear,
-                          switchOutCurve: Curves.easeOutBack,
-                          child: isHomePageSelected
-                              ? MyHomePage()
-                              : Align(
-                                  alignment: Alignment.topCenter,
-                                  child: ShoppingCartPage(),
-                                ),
-                        ),
-                      ),
+                      SizedBox(height: 10),
+                      _eventList(),
                     ],
                   ),
                 ),
@@ -235,7 +322,7 @@ class _MainPageState extends State<MainPage> {
                 bottom: 0,
                 right: 0,
                 child: CustomBottomNavigationBar(
-                  onIconPressedCallback: onBottomIconPressed, // Asigură-te că callback-ul corect este folosit
+                  onIconPressedCallback: onBottomIconPressed,
                 ),
               ),
             ],

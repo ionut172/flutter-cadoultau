@@ -16,6 +16,7 @@ class Routes {
       'AddPersonPage': (context) => AddPersonPage(),
       '/detail': (context) => ProductDetailPage(),
       'HomePage': (context) => MyHomePage(),
-    };
+};
+
   }
 }

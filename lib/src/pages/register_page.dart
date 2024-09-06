@@ -82,7 +82,10 @@ class RegisterPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Înregistrare')),
+      appBar: AppBar(
+        title: Text('Înregistrare'),
+        backgroundColor: Colors.deepPurple,
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -90,65 +93,23 @@ class RegisterPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam.',
-                style: TextStyle(fontSize: 16.0),
+                'Completează datele pentru a crea un cont nou.',
+                style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.deepPurple),
               ),
               SizedBox(height: 20),
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email),
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: usernameController,
-                decoration: InputDecoration(
-                  labelText: 'Username',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
-                ),
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: passwordController,
-                decoration: InputDecoration(
-                  labelText: 'Parolă',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock),
-                ),
-                obscureText: true,
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: addressController,
-                decoration: InputDecoration(
-                  labelText: 'Adresă',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.home),
-                ),
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: phoneController,
-                decoration: InputDecoration(
-                  labelText: 'Număr de Telefon',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.phone),
-                ),
-                keyboardType: TextInputType.phone,
-              ),
+              _buildTextField('Email', Icons.email, emailController, TextInputType.emailAddress),
+              _buildTextField('Username', Icons.person, usernameController, TextInputType.text),
+              _buildTextField('Parolă', Icons.lock, passwordController, TextInputType.text, obscureText: true),
+              _buildTextField('Adresă', Icons.home, addressController, TextInputType.text),
+              _buildTextField('Număr de Telefon', Icons.phone, phoneController, TextInputType.phone),
               SizedBox(height: 20),
               Center(
                 child: ElevatedButton(
                   onPressed: () => _register(context),
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
-                    backgroundColor: Theme.of(context).primaryColor,
-                    foregroundColor: Colors.white, // Asigură că textul este alb
+                    backgroundColor: Colors.deepPurple,
+                    foregroundColor: Colors.white,
                   ),
                   child: Text('Înregistrare', style: TextStyle(fontSize: 18.0)),
                 ),
@@ -156,6 +117,23 @@ class RegisterPage extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  // Helper pentru construirea unui TextField
+  Widget _buildTextField(String label, IconData icon, TextEditingController controller, TextInputType keyboardType, {bool obscureText = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(),
+          prefixIcon: Icon(icon),
+        ),
+        keyboardType: keyboardType,
+        obscureText: obscureText,
       ),
     );
   }

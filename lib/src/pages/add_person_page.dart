@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cadoultau/src/pages/product_preferences_page.dart';
 
 class AddPersonPage extends StatefulWidget {
+  final Function(Map<String, dynamic>)? onPersonAdded;
+
+  AddPersonPage({this.onPersonAdded});
+
   @override
   _AddPersonPageState createState() => _AddPersonPageState();
 }
@@ -11,11 +16,6 @@ class _AddPersonPageState extends State<AddPersonPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  List<Map<String, dynamic>> people = [];
-
-  final List<String> relations = ["Soție", "Iubită", "Mamă", "Tată"];
-  final List<String> productCategories = ["Parfumuri", "Bijuterii", "Cărți", "Gadgeturi"];
-
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController birthdateController = TextEditingController();
@@ -23,84 +23,59 @@ class _AddPersonPageState extends State<AddPersonPage> {
   final TextEditingController phoneController = TextEditingController();
 
   String? selectedRelation;
-  String? selectedProductCategory;
+  String? selectedSex;
 
-  void _addAndSavePerson(BuildContext context) async {
+  final List<String> relations = ["Soție", "Iubită", "Mamă", "Tată"];
+  final List<String> sexes = ["Masculin", "Feminin", "Altceva"];
+
+  void _nextStep() {
     if (selectedRelation != null &&
+        selectedSex != null &&
         firstNameController.text.isNotEmpty &&
         lastNameController.text.isNotEmpty &&
         birthdateController.text.isNotEmpty &&
         addressController.text.isNotEmpty &&
-        phoneController.text.isNotEmpty &&
-        selectedProductCategory != null) {
-      
-      people.add({
-        'relation': selectedRelation,
-        'firstName': firstNameController.text,
-        'lastName': lastNameController.text,
-        'birthdate': DateTime.parse(birthdateController.text).toIso8601String(),
-        'address': addressController.text,
-        'phone': phoneController.text,
-        'preferredProduct': selectedProductCategory,
-      });
+        phoneController.text.isNotEmpty) {
 
-      try {
-        User? user = _auth.currentUser;
-        if (user != null) {
-          DocumentReference userDocRef = _firestore.collection('users').doc(user.uid);
-
-          DocumentSnapshot docSnapshot = await userDocRef.get();
-          if (!docSnapshot.exists) {
-            await userDocRef.set({
-              'username': user.displayName ?? user.email ?? 'No Name',
-              'email': user.email,
-              'address': '',
-              'phone': '',
-              'favorite_people': [],
-            });
-          }
-
-          if (people.isNotEmpty) {
-            await userDocRef.update({
-              'favorite_people': FieldValue.arrayUnion(people),
-            });
-
-            _showSuccessMessage(context);
-          }
+      // Creează un obiect care conține toate informațiile introduse
+      Map<String, dynamic> personData = {
+        'basic_info': {
+          'relation': selectedRelation,
+          'firstName': firstNameController.text,
+          'lastName': lastNameController.text,
+          'birthdate': birthdateController.text,
+          'address': addressController.text,
+          'phone': phoneController.text,
+          'sex': selectedSex,
         }
-      } catch (e) {
-        print(e);
-        _showErrorDialog(context, 'Failed to save person. Please try again.');
+      };
+
+      // Verifică dacă este definit un callback pentru adăugarea persoanei
+      if (widget.onPersonAdded != null) {
+        widget.onPersonAdded!(personData);
       }
+
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => ProductPreferencesPage(
+          firstName: firstNameController.text,
+          lastName: lastNameController.text,
+          relation: selectedRelation!,
+          birthdate: birthdateController.text,
+          address: addressController.text,
+          phone: phoneController.text,
+          sex: selectedSex!, // Include sexul aici
+        ),
+      ));
     } else {
-      _showErrorDialog(context, 'Toate câmpurile sunt obligatorii.');
+      _showErrorDialog('Toate câmpurile sunt obligatorii.');
     }
   }
 
-  void _showSuccessMessage(BuildContext context) {
+  void _showErrorDialog(String message) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Succes!'),
-        content: Text('Persoana a fost înregistrată cu succes.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pushReplacementNamed('MainPage');
-            },
-            child: Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showErrorDialog(BuildContext context, String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Error'),
+        title: Text('Eroare'),
         content: Text(message),
         actions: [
           TextButton(
@@ -117,7 +92,7 @@ class _AddPersonPageState extends State<AddPersonPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Adăuga Persoană'),
-        backgroundColor: Colors.deepPurple, // Schimbă culoarea AppBar-ului
+        backgroundColor: Colors.deepPurple,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -145,6 +120,25 @@ class _AddPersonPageState extends State<AddPersonPage> {
                 onChanged: (value) {
                   setState(() {
                     selectedRelation = value as String?;
+                  });
+                },
+              ),
+              SizedBox(height: 10),
+              DropdownButtonFormField(
+                decoration: InputDecoration(
+                  labelText: 'Sex',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person),
+                ),
+                items: sexes.map((sex) {
+                  return DropdownMenuItem(
+                    value: sex,
+                    child: Text(sex),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedSex = value as String?;
                   });
                 },
               ),
@@ -208,49 +202,17 @@ class _AddPersonPageState extends State<AddPersonPage> {
                 ),
                 keyboardType: TextInputType.phone,
               ),
-              SizedBox(height: 10),
-              DropdownButtonFormField(
-                decoration: InputDecoration(
-                  labelText: 'Produse Preferate',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.shopping_bag),
-                ),
-                items: productCategories.map((category) {
-                  return DropdownMenuItem(
-                    value: category,
-                    child: Text(category),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedProductCategory = value as String?;
-                  });
-                },
-              ),
               SizedBox(height: 20),
               Center(
                 child: ElevatedButton(
-                  onPressed: () => _addAndSavePerson(context),
+                  onPressed: _nextStep,
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
                     backgroundColor: Colors.deepPurple,
-                    foregroundColor: Colors.white, // Asigură că textul este alb
+                    foregroundColor: Colors.white,
                     textStyle: TextStyle(fontSize: 16.0),
                   ),
-                  child: Text('Salvează'),
-                ),
-              ),
-              SizedBox(height: 20),
-              Center(
-                child: ElevatedButton(
-                  onPressed: () => Navigator.of(context).pushReplacementNamed('MainPage'),
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
-                    backgroundColor: Colors.grey[600],
-                    foregroundColor: Colors.white, // Asigură că textul este alb
-                    textStyle: TextStyle(fontSize: 16.0),
-                  ),
-                  child: Text('Continua fără a adăuga persoane'),
+                  child: Text('Următorul Pas'),
                 ),
               ),
             ],

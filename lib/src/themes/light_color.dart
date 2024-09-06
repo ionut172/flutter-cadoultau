@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class LightColor {
   static const Color background = Color(0XFFFFFFFF);
 
+  static const Color darkBlue = Color(0xFF023047);   // Definiți o nuanță de albastru închis
   static const Color titleTextColor = const Color(0xff1d2635);
   static const Color subTitleTextColor = const Color(0xff797878);
 

@@ -1,4 +1,4 @@
-class Product {
+class Activity {
   final int id;
   final String title;  // Use 'title' instead of 'name' as per your API data
   final String description;
@@ -9,7 +9,7 @@ class Product {
   bool isSelected;
   int quantity;  // Add quantity field
 
-  Product({
+  Activity({
     required this.id,
     required this.title,
     required this.description,

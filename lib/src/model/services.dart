@@ -1,4 +1,4 @@
-class Product {
+class Service {
   final int id;
   final String title;  // Use 'title' instead of 'name' as per your API data
   final String description;
@@ -9,8 +9,8 @@ class Product {
   bool isSelected;
   int quantity;  // Add quantity field
 
-  Product({
-    required this.id,
+  Service({
+     required this.id,
     required this.title,
     required this.description,
     required this.category,
@@ -21,5 +21,4 @@ class Product {
     this.quantity = 1,
   });
 
- 
 }
