@@ -11,12 +11,17 @@ import 'package:cloud_firestore/cloud_firestore.dart'; // Add this for Firestore
 import 'package:cadoultau/src/pages/login_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'src/themes/theme.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'; 
+import 'firebase_options.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   runApp(MyApp());
 }
 
@@ -30,7 +35,16 @@ class MyApp extends StatelessWidget {
           Theme.of(context).textTheme,
         ),
       ),
-      debugShowCheckedModeBanner: false,
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('en', 'US'), // English
+        const Locale('ro', 'RO'), // Romanian
+      ],
+      debugShowCheckedModeBanner: true,
       home: SplashScreen(),
       routes: Routes.getRoute(),
     );

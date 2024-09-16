@@ -9,25 +9,30 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
-  # Cupertino Icons pentru stiluri de iconițe specifice iOS
+  flutter_localizations:
+    sdk: flutter
+  flutter_launcher_icons: ^0.13.1
   cupertino_icons: ^1.0.3
-
-  # Google Fonts pentru utilizarea fonturilor Google
+  shared_preferences: ^2.1.1
   google_fonts: ^2.1.0
   firebase_core: ^2.24.2
   firebase_auth: ^4.0.0
   sign_in_with_apple: ^3.1.0
   google_sign_in: ^6.0.0
-  animated_splash_screen: ^1.2.0  # Add this line
-  carousel_slider: ^5.0.0  # Add the carousel slider package
+  animated_splash_screen: ^1.2.0 
+  carousel_slider: ^5.0.0 
   cloud_firestore: ^4.14.0
-  intl: ^0.18.0
+  intl: ^0.19.0
   http: ^0.13.4
+  url_launcher: ^6.0.17
+  stripe_payment: ^1.1.4
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
+flutter_icons:
+    image_path: "icon/icon.jpg" 
+    android: true
+    ios: true
 flutter:
   uses-material-design: true
   

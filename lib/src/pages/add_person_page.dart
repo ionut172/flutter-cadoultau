@@ -21,56 +21,85 @@ class _AddPersonPageState extends State<AddPersonPage> {
   final TextEditingController birthdateController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
+  final TextEditingController allTimeDateController = TextEditingController(); // Controler pentru allTimeDate
 
   String? selectedRelation;
   String? selectedSex;
 
-  final List<String> relations = ["Soție", "Iubită", "Mamă", "Tată"];
+  final List<String> relations = ["Soție", "Iubită", "Mamă", "Tată", "Iubit"];
   final List<String> sexes = ["Masculin", "Feminin", "Altceva"];
 
-  void _nextStep() {
-    if (selectedRelation != null &&
-        selectedSex != null &&
-        firstNameController.text.isNotEmpty &&
-        lastNameController.text.isNotEmpty &&
-        birthdateController.text.isNotEmpty &&
-        addressController.text.isNotEmpty &&
-        phoneController.text.isNotEmpty) {
-
-      // Creează un obiect care conține toate informațiile introduse
-      Map<String, dynamic> personData = {
-        'basic_info': {
-          'relation': selectedRelation,
-          'firstName': firstNameController.text,
-          'lastName': lastNameController.text,
-          'birthdate': birthdateController.text,
-          'address': addressController.text,
-          'phone': phoneController.text,
-          'sex': selectedSex,
-        }
-      };
-
-      // Verifică dacă este definit un callback pentru adăugarea persoanei
-      if (widget.onPersonAdded != null) {
-        widget.onPersonAdded!(personData);
+  // Funcția capitalizează fiecare cuvânt și elimină spațiile libere
+  String capitalize(String value) {
+    if (value.isEmpty) return value;
+    return value.trim().split(' ').map((word) {
+      if (word.isNotEmpty) {
+        return word[0].toUpperCase() + word.substring(1).toLowerCase();
+      } else {
+        return '';
       }
-
-      Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => ProductPreferencesPage(
-          firstName: firstNameController.text,
-          lastName: lastNameController.text,
-          relation: selectedRelation!,
-          birthdate: birthdateController.text,
-          address: addressController.text,
-          phone: phoneController.text,
-          sex: selectedSex!, // Include sexul aici
-        ),
-      ));
-    } else {
-      _showErrorDialog('Toate câmpurile sunt obligatorii.');
-    }
+    }).join(' ');
   }
+  
+  // Funcția de validare și trecere la pasul următor
+  void _nextStep() {
+  if (selectedRelation != null &&
+      selectedSex != null &&
+      firstNameController.text.isNotEmpty &&
+      lastNameController.text.isNotEmpty &&
+      birthdateController.text.isNotEmpty &&
+      addressController.text.isNotEmpty &&
+      phoneController.text.isNotEmpty &&
+      allTimeDateController.text.isNotEmpty) { // Verificăm dacă toate câmpurile sunt completate
 
+    // Procesăm prenumele și numele pentru a le capitaliza
+    String firstName = capitalize(firstNameController.text);
+    String lastName = capitalize(lastNameController.text);
+
+    // Procesăm adresa și telefonul
+    String address = addressController.text.trim();
+    String phone = phoneController.text.trim();
+    String allTimeDate = allTimeDateController.text.trim(); // Data de când petrec timp împreună
+
+    // Creează un obiect care conține toate informațiile
+    Map<String, dynamic> personData = {
+      'basic_info': {
+        'relation': selectedRelation,
+        'firstName': firstName,
+        'lastName': lastName,
+        'birthdate': birthdateController.text,
+        'address': address,
+        'phone': phone,
+        'sex': selectedSex,
+        'allTimeDate': allTimeDateController.text,
+      }
+    };
+
+    // Verificăm dacă este definit un callback pentru adăugarea persoanei
+    if (widget.onPersonAdded != null) {
+      widget.onPersonAdded!(personData);
+    }
+
+    // Navigăm la pagina următoare
+    Navigator.of(context).push(MaterialPageRoute(
+  builder: (context) => ProductPreferencesPage(
+    firstName: firstName,
+    lastName: lastName,
+    relation: selectedRelation!,
+    birthdate: birthdateController.text,
+    address: address,
+    phone: phone,
+    sex: selectedSex!,
+    allTimeDate: allTimeDateController.text, // Trebuie să adăugăm corect acest parametru
+  ),
+));
+  } else {
+    _showErrorDialog('Toate câmpurile sunt obligatorii.');
+  }
+}
+
+
+  // Afișează un dialog de eroare
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
@@ -178,6 +207,29 @@ class _AddPersonPageState extends State<AddPersonPage> {
                   if (pickedDate != null) {
                     setState(() {
                       birthdateController.text = "${pickedDate.toLocal()}".split(' ')[0];
+                    });
+                  }
+                },
+                readOnly: true,
+              ),
+              SizedBox(height: 10),
+              TextField(
+                controller: allTimeDateController, // Câmpul pentru prima întâlnire
+                decoration: InputDecoration(
+                  labelText: 'Prima întâlnire',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.calendar_today),
+                ),
+                onTap: () async {
+                  DateTime? pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime.now(),
+                  );
+                  if (pickedDate != null) {
+                    setState(() {
+                      allTimeDateController.text = "${pickedDate.toLocal()}".split(' ')[0];
                     });
                   }
                 },

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:cadoultau/src/pages/gift_page.dart';
 import 'package:cadoultau/src/pages/login_page.dart';
+import 'package:cadoultau/src/pages/shopping_cart_page.dart';
+import 'package:cadoultau/src/pages/relationship_page.dart';
+import 'package:cadoultau/src/pages/my_orders_page.dart';
 import 'package:cadoultau/src/themes/light_color.dart';
+import 'package:cadoultau/src/model/cart_data.dart';
 import 'package:cadoultau/src/themes/theme.dart';
 import 'package:cadoultau/src/widgets/BottomNavigationBar/bottom_navigation_bar.dart';
-import 'package:cadoultau/src/widgets/title_text.dart';
-import 'package:cadoultau/src/widgets/extentions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cadoultau/src/widgets/event_list.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MainPage extends StatefulWidget {
   final String title;
@@ -22,24 +24,13 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   bool isHomePageSelected = true;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  // Obține UID-ul utilizatorului logat
   User? currentUser = FirebaseAuth.instance.currentUser;
 
-  void _openDrawer() {
-    _scaffoldKey.currentState?.openDrawer();
-  }
+  void _openDrawer() => _scaffoldKey.currentState?.openDrawer();
 
   void _navigateToHome() {
     setState(() {
       isHomePageSelected = true;
-    });
-    Navigator.pop(context);
-  }
-
-  void _navigateToShop() {
-    setState(() {
-      isHomePageSelected = false;
     });
     Navigator.pop(context);
   }
@@ -50,233 +41,68 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
-  void _logout() async {
-    await FirebaseAuth.instance.signOut();
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => LoginPage()),
-    );
-  }
+  Future<void> _logout() async {
+  // Șterge UID-ul din SharedPreferences
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.remove('userUid');
+  
+  // Deconectează utilizatorul din Firebase Auth
+  await FirebaseAuth.instance.signOut();
+
+  // Redirecționează către pagina de login
+  Navigator.of(context).pushReplacement(
+    MaterialPageRoute(builder: (context) => LoginPage()),
+  );
+}
+
 
   Widget _appBar() {
-    return Container(
-      padding: AppTheme.padding,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          RotatedBox(
-            quarterTurns: 4,
-            child: _icon(Icons.sort, color: Colors.black54, onPressed: _openDrawer),
+          IconButton(
+            icon: Icon(Icons.menu, color: Colors.black54),
+            onPressed: _openDrawer,
+            iconSize: 30,
           ),
-          ClipRRect(
-            borderRadius: BorderRadius.all(Radius.circular(13)),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.background,
-                boxShadow: <BoxShadow>[
-                  BoxShadow(
-                    color: Color(0xfff8f8f8),
-                    blurRadius: 10,
-                    spreadRadius: 10,
-                  ),
-                ],
-              ),
-              child: Image.asset("assets/user.png"),
+          ClipOval(
+            child: Image.asset(
+              "assets/user.png",
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
             ),
-          ).ripple(() {}, borderRadius: BorderRadius.all(Radius.circular(13))),
+          ),
+          IconButton(
+            icon: Icon(Icons.people, color: Colors.black54),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ShoppingCartPage(cartList: cartList)));
+            },
+            iconSize: 30,
+          ),
         ],
-      ),
-    );
-  }
-
-  Widget _icon(IconData icon, {Color color = LightColor.iconColor, required VoidCallback onPressed}) {
-    return Container(
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(13)),
-        color: Theme.of(context).colorScheme.background,
-        boxShadow: AppTheme.shadow,
-      ),
-      child: IconButton(
-        icon: Icon(icon, color: color),
-        onPressed: onPressed,
       ),
     );
   }
 
   Widget _title() {
-    return Container(
-      margin: AppTheme.padding,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              TitleText(text: 'Evenimentele', fontSize: 27, fontWeight: FontWeight.w400),
-              TitleText(text: 'Următoare', fontSize: 27, fontWeight: FontWeight.w700),
-            ],
-          ),
-          Spacer(),
-        ],
-      ),
-    );
-  }
-
-  // Funcția pentru preluarea datelor despre persoanele favorite din Firestore
-  Widget _eventList() {
-    if (currentUser == null) {
-      return Center(child: Text('Nu sunteți autentificat.'));
-    }
-
-    return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance.collection('users').doc(currentUser!.uid).snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Eroare la încărcarea datelor'));
-        } else if (!snapshot.hasData || snapshot.data == null) {
-          return Center(child: Text('Nu există date disponibile'));
-        }
-
-        // Extragem datele utilizatorului
-        Map<String, dynamic> userData = snapshot.data!.data() as Map<String, dynamic>;
-        List<dynamic> favoritePeople = userData['favorite_people'] ?? [];
-
-        if (favoritePeople.isEmpty) {
-          return Center(child: Text('Nu există persoane favorite'));
-        }
-
-        // Afișăm lista persoanelor favorite sub formă de slider
-        return CarouselSlider(
-          options: CarouselOptions(
-            height: 250.0,  // Poți ajusta înălțimea cardului dacă e nevoie
-            enlargeCenterPage: true,
-            viewportFraction: 0.6,  // Afișează 25% din următorul card
-            autoPlay: false,
-            enableInfiniteScroll: false,
-          ),
-          items: favoritePeople.map((person) {
-            if (person.containsKey('basic_info')) {
-              Map<String, dynamic> personData = person['basic_info'] ?? {};
-              return _eventCard(personData);
-            }
-            return Container();
-          }).toList(),
-        );
-      },
-    );
-  }
-
-  // Widget pentru a afișa cardul cu datele unei persoane
-  Widget _eventCard(Map<String, dynamic> personData) {
-  String firstName = personData['firstName'] ?? 'N/A';
-  String lastName = personData['lastName'] ?? 'N/A';
-  String relation = personData['relation'] ?? 'Relație necunoscută';
-  String birthdateString = personData['birthdate'] ?? '';
-
-  if (birthdateString.isEmpty) {
-    return Container();
-  }
-
-  DateTime birthdate = DateTime.parse(birthdateString);
-  int daysUntilBirthday = daysUntilNextBirthday(birthdate);
-
-  return Card(
-    margin: EdgeInsets.symmetric(horizontal: 8, vertical: 16),  // Ajustează margin pentru a lărgi cardul
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-    elevation: 4,
-    child: Padding(
-      padding: const EdgeInsets.all(15),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,  // Centrează pe verticală
-        crossAxisAlignment: CrossAxisAlignment.center, // Centrează pe orizontală
-        children: [
-          Text('$firstName $lastName', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          SizedBox(height: 8),
-          Text('$relation', style: TextStyle(fontSize: 16)),
-          SizedBox(height: 8),
-          Text('Aniversare in: $daysUntilBirthday zile', style: TextStyle(fontSize: 16)),
-          SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => GiftPage()));
-            },
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,  // Setează butonul la alb
-              backgroundColor: LightColor.lightBlue  // Textul va fi negru
-            ),
-            child: Text('Trimite un cadou'),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-
-  // Funcție pentru a calcula numărul de zile până la următoarea aniversare
-  int daysUntilNextBirthday(DateTime birthdate) {
-    DateTime now = DateTime.now();
-    DateTime nextBirthday = DateTime(now.year, birthdate.month, birthdate.day);
-
-    if (nextBirthday.isBefore(now)) {
-      nextBirthday = DateTime(now.year + 1, birthdate.month, birthdate.day);
-    }
-
-    return nextBirthday.difference(now).inDays;
-  }
-
-  // Funcția pentru meniul personalizat
-  Widget _buildDrawer() {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          DrawerHeader(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [LightColor.lightBlue, LightColor.darkBlue],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.person, size: 40, color: LightColor.lightBlue),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  'Bine ai venit!',
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  currentUser?.email ?? 'Utilizator',
-                  style: TextStyle(color: Colors.white70),
-                ),
-              ],
+          Text(
+            'Evenimentele Următoare',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
             ),
           ),
-          ListTile(
-            leading: Icon(Icons.home, color: LightColor.lightBlue),
-            title: Text('Home'),
-            onTap: _navigateToHome,
-          ),
-          ListTile(
-            leading: Icon(Icons.shopping_cart, color: LightColor.lightBlue),
-            title: Text('Shop'),
-            onTap: _navigateToShop,
-          ),
-          Divider(),
-          ListTile(
-            leading: Icon(Icons.logout, color: Colors.red),
-            title: Text('Logout'),
-            onTap: _logout,
-          ),
+          SizedBox(height: 5),
+          Divider(color: Colors.black26, thickness: 1),
         ],
       ),
     );
@@ -292,7 +118,7 @@ class _MainPageState extends State<MainPage> {
       },
       child: Scaffold(
         key: _scaffoldKey,
-        drawer: _buildDrawer(),  // Meniul personalizat
+        drawer: _buildDrawer(),
         body: SafeArea(
           child: Stack(
             fit: StackFit.expand,
@@ -313,7 +139,7 @@ class _MainPageState extends State<MainPage> {
                       _appBar(),
                       _title(),
                       SizedBox(height: 10),
-                      _eventList(),
+                      EventList(), // Componenta pentru lista de evenimente
                     ],
                   ),
                 ),
@@ -321,6 +147,7 @@ class _MainPageState extends State<MainPage> {
               Positioned(
                 bottom: 0,
                 right: 0,
+                left: 0,
                 child: CustomBottomNavigationBar(
                   onIconPressedCallback: onBottomIconPressed,
                 ),
@@ -331,4 +158,86 @@ class _MainPageState extends State<MainPage> {
       ),
     );
   }
+
+  Widget _buildDrawer() {
+  return Drawer(
+    child: ListView(
+      padding: EdgeInsets.zero,
+      children: <Widget>[
+        DrawerHeader(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [LightColor.lightBlue, LightColor.darkBlue],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: Colors.white,
+                child: Icon(Icons.person, size: 40, color: LightColor.lightBlue),
+              ),
+              SizedBox(height: 10),
+              Text(
+                'Bine ai venit!',
+                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                currentUser?.email ?? 'Utilizator',
+                style: TextStyle(color: Colors.white70),
+              ),
+            ],
+          ),
+        ),
+        ListTile(
+          leading: Icon(Icons.home, color: LightColor.lightBlue),
+          title: Text('Home'),
+          onTap: _navigateToHome,
+        ),
+        if (currentUser != null) // Arătăm aceste opțiuni doar dacă utilizatorul este autentificat
+          ListTile(
+            leading: Icon(Icons.shop, color: LightColor.lightBlue),
+            title: Text('Comenzile Mele'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MyOrdersPage()),
+              );
+            },
+          ),
+        if (currentUser != null)
+          ListTile(
+            leading: Icon(Icons.people, color: LightColor.lightBlue),
+            title: Text('Relațiile mele'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => RelationshipPage()),
+              );
+            },
+          ),
+        Divider(),
+        if (currentUser != null)
+          ListTile(
+            leading: Icon(Icons.logout, color: Colors.red),
+            title: Text('Logout'),
+            onTap: _logout,
+          ),
+        if (currentUser == null) // Dacă nu este autentificat, arătăm butonul de login
+          ListTile(
+            leading: Icon(Icons.login, color: LightColor.lightBlue),
+            title: Text('Login'),
+            onTap: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => LoginPage()),
+              );
+            },
+          ),
+      ],
+    ),
+  );
+}
 }

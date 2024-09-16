@@ -8,8 +8,8 @@ class FoodActivityInterestsPage extends StatefulWidget {
   final String birthdate;
   final String address;
   final String phone;
-  
   final List<String> preferredProducts;
+  final String allTimeDate;
 
   FoodActivityInterestsPage({
     required this.firstName,
@@ -19,11 +19,13 @@ class FoodActivityInterestsPage extends StatefulWidget {
     required this.address,
     required this.phone,
     required this.preferredProducts,
+    required this.allTimeDate, // Adăugăm și allTimeDate
   });
 
   @override
   _FoodActivityInterestsPageState createState() => _FoodActivityInterestsPageState();
 }
+
 
 class _FoodActivityInterestsPageState extends State<FoodActivityInterestsPage> {
   final List<String> foodPreferences = ["Vegetarian", "Vegan", "Carnivor"];
@@ -47,6 +49,7 @@ class _FoodActivityInterestsPageState extends State<FoodActivityInterestsPage> {
         foodPreferences: selectedFoods,
         activityPreferences: selectedActivities,
         interestPreferences: selectedInterests,
+        allTimeDate: widget.allTimeDate, // Transmitem allTimeDate mai departe
       ),
     ));
   }

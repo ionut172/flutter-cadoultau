@@ -4,7 +4,7 @@ import '../model/activity.dart';
 import '../model/product.dart';
 import '../model/hobbies.dart';
 import '../model/services.dart';
-import 'order_page.dart';  // Import the new Order Page
+import './order_page.dart';  // Import the new Order Page
 
 class ShoppingCartPage extends StatefulWidget {
   final List<dynamic> cartList;
@@ -60,91 +60,93 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
       ),
       body: widget.cartList.isEmpty
           ? Center(child: Text('Your cart is empty'))
-          : SafeArea( // Wrap everything in SafeArea to prevent overlapping with notifications
-            child: Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: widget.cartList.length,
-                    itemBuilder: (context, index) {
-                      final item = widget.cartList[index];
+          : SafeArea(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: widget.cartList.length,
+                      itemBuilder: (context, index) {
+                        final item = widget.cartList[index];
 
-                      return Card(
-                        margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                        child: ListTile(
-                          leading: Image.network(
-                            item.image,
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
+                        return Card(
+                          margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                          child: ListTile(
+                            leading: Image.network(
+                              item.image,
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                            ),
+                            title: Text(item.title),
+                            subtitle: Text('\$${item.price.toStringAsFixed(2)}'),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: Icon(Icons.remove),
+                                  onPressed: () => decreaseQuantity(item),
+                                ),
+                                Text('${item.quantity}'),
+                                IconButton(
+                                  icon: Icon(Icons.add),
+                                  onPressed: () => increaseQuantity(item),
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.delete, color: Colors.red),
+                                  onPressed: () => removeFromCart(item),
+                                ),
+                              ],
+                            ),
                           ),
-                          title: Text(item.title),
-                          subtitle: Text('\$${item.price.toStringAsFixed(2)}'),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: Icon(Icons.remove),
-                                onPressed: () => decreaseQuantity(item),
-                              ),
-                              Text('${item.quantity}'), // Display the quantity
-                              IconButton(
-                                icon: Icon(Icons.add),
-                                onPressed: () => increaseQuantity(item),
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => removeFromCart(item),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                Divider(),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Total:',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '\$${getTotalPrice().toStringAsFixed(2)}',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: ElevatedButton(
-                    onPressed: widget.cartList.isEmpty
-                        ? null
-                        : () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => OrderPage(),
-                              ),
-                            );
-                          },
-                    child: Text('Finalizează comanda'),
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                      backgroundColor: Colors.orange,
+                        );
+                      },
                     ),
                   ),
-                ),
-                SizedBox(height: 20),
-              ],
+                  Divider(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Total:',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          '\$${getTotalPrice().toStringAsFixed(2)}',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: ElevatedButton(
+                      onPressed: widget.cartList.isEmpty
+                          ? null
+                          : () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => OrderPage(
+                                    totalAmount: getTotalPrice(), // Trimite suma totală către OrderPage
+                                  ),
+                                ),
+                              );
+                            },
+                      child: Text('Finalizează comanda'),
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                        backgroundColor: Colors.orange,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                ],
+              ),
             ),
-          ),
     );
   }
 }

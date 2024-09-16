@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cadoultau/src/themes/light_color.dart';
 import 'package:cadoultau/src/widgets/BottomNavigationBar/bottom_curved_Painter.dart';
+import 'package:cadoultau/src/pages/search_page.dart';
+import 'package:cadoultau/src/pages/relationship_page.dart';
+import 'package:cadoultau/src/pages/products_all_page.dart';
 
 class CustomBottomNavigationBar extends StatefulWidget {
   final Function(int) onIconPressedCallback; // Ensure the parameter name is correct
@@ -131,25 +134,53 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar>
   }
 
   void _handlePressed(int index) {
-    if (_selectedIndex == index || _xController.isAnimating) return;
-    if (widget.onIconPressedCallback != null) {
-      widget.onIconPressedCallback!(index);
-    }
-    setState(() {
-      _selectedIndex = index;
-    });
+  if (_selectedIndex == index || _xController.isAnimating) return;
 
-    _yController.value = 1.0;
-    _xController.animateTo(
-        _indexToPosition(index) / MediaQuery.of(context).size.width);
-    Future.delayed(
-      Duration(milliseconds: 500),
-      () {
-        _yController.animateTo(1.0, duration: Duration(milliseconds: 1200));
-      },
-    );
-    _yController.animateTo(0.0, duration: Duration(milliseconds: 300));
+  setState(() {
+    _selectedIndex = index;
+  });
+
+  if (index == 0) {
+    widget.onIconPressedCallback(index);
+  } else if (index == 1) {
+    // Navighează la pagina de căutare
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SearchPage()),
+    ).then((value) {
+      // La întoarcere, selectează butonul Home
+      setState(() {
+        _selectedIndex = 0;
+      });
+      widget.onIconPressedCallback(0); // Actualizează Home
+    });
+  } else if (index == 2) {
+    // Navighează la pagina de produse
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => RelationshipPage()),
+    ).then((value) {
+      // La întoarcere, selectează butonul Home
+      setState(() {
+        _selectedIndex = 0;
+      });
+      widget.onIconPressedCallback(0); // Actualizează Home
+    });
   }
+
+  // Animatie pentru selectie
+  _yController.value = 1.0;
+  _xController.animateTo(
+      _indexToPosition(index) / MediaQuery.of(context).size.width);
+  Future.delayed(
+    Duration(milliseconds: 500),
+    () {
+      _yController.animateTo(1.0, duration: Duration(milliseconds: 1200));
+    },
+  );
+  _yController.animateTo(0.0, duration: Duration(milliseconds: 300));
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -177,8 +208,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar>
               children: <Widget>[
                 _icon(Icons.home, _selectedIndex == 0, 0),
                 _icon(Icons.search, _selectedIndex == 1, 1),
-                _icon(Icons.card_travel, _selectedIndex == 2, 2),
-                _icon(Icons.favorite_border, _selectedIndex == 3, 3),
+                _icon(Icons.people, _selectedIndex == 2, 2),
               ],
             ),
           ),

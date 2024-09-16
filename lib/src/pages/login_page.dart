@@ -5,12 +5,39 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cadoultau/src/themes/theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkUserLoggedIn(); // Verifică dacă utilizatorul este deja autentificat
+  }
+
+  Future<void> _checkUserLoggedIn() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userUid = prefs.getString('userUid');
+
+    if (userUid != null) {
+      // Dacă utilizatorul este salvat în SharedPreferences, navighează la pagina principală
+      Navigator.of(context).pushReplacementNamed('MainPage');
+    }
+  }
+
+  Future<void> _saveUserUidLocally(String uid) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userUid', uid);
+  }
 
   Future<void> _signInWithApple(BuildContext context) async {
     try {
@@ -27,27 +54,7 @@ class LoginPage extends StatelessWidget {
       );
 
       UserCredential userCredential = await _auth.signInWithCredential(credential);
-
-      DocumentReference userDocRef = FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid);
-      DocumentSnapshot docSnapshot = await userDocRef.get();
-      
-      if (!docSnapshot.exists) {
-        await userDocRef.set({
-          'username': userCredential.user!.displayName ?? 'No Name',
-          'email': userCredential.user!.email ?? '',
-          'address': '',
-          'phone': '',
-          'favorite_people': [],
-        });
-      }
-
-      final userData = docSnapshot.data() as Map<String, dynamic>?; 
-      List<dynamic> favoritePeople = userData?['favorite_people'] ?? [];
-      if (favoritePeople.isNotEmpty) {
-        Navigator.of(context).pushReplacementNamed('MainPage');
-      } else {
-        Navigator.of(context).pushReplacementNamed('AddPersonPage');
-      }
+      await _handleUserAfterLogin(userCredential, context);
     } catch (e) {
       _showErrorDialog(context, 'Sign in with Apple failed. Please try again.');
       print(e);
@@ -64,35 +71,58 @@ class LoginPage extends StatelessWidget {
           idToken: googleAuth.idToken,
         );
         UserCredential userCredential = await _auth.signInWithCredential(credential);
-
-        DocumentReference userDocRef = FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid);
-        DocumentSnapshot docSnapshot = await userDocRef.get();
-        
-        if (!docSnapshot.exists) {
-          await userDocRef.set({
-            'username': googleUser.displayName ?? 'No Name',
-            'email': googleUser.email,
-            'address': '',
-            'phone': '',
-            'favorite_people': [],
-          });
-        }
-
-        final userData = docSnapshot.data() as Map<String, dynamic>?; 
-        List<dynamic> favoritePeople = userData?['favorite_people'] ?? [];
-
-        if (favoritePeople.isNotEmpty) {
-          Navigator.of(context).pushReplacementNamed('MainPage');
-        } else {
-          Navigator.of(context).pushReplacementNamed('AddPersonPage');
-        }
+        await _handleUserAfterLogin(userCredential, context);
       }
     } catch (e) {
       _showErrorDialog(context, 'Login with Google failed. Please try again.');
       print(e);
     }
   }
-  
+
+  Future<void> _loginWithEmailAndPassword(BuildContext context) async {
+    try {
+      final String email = emailController.text;
+      final String password = passwordController.text;
+
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      await _handleUserAfterLogin(userCredential, context);
+    } on FirebaseAuthException catch (e) {
+      print("FirebaseAuthException code: ${e.code}");
+      _handleLoginError(context, e);
+    } catch (e) {
+      _showErrorDialog(context, 'An unknown error occurred. Please try again.');
+      print(e);
+    }
+  }
+
+  Future<void> _handleUserAfterLogin(UserCredential userCredential, BuildContext context) async {
+    // Salvează UID-ul utilizatorului în SharedPreferences
+    await _saveUserUidLocally(userCredential.user!.uid);
+
+    // Preia documentul utilizatorului din Firestore
+    DocumentReference userDocRef = FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid);
+    DocumentSnapshot docSnapshot = await userDocRef.get();
+
+    if (!docSnapshot.exists) {
+      await userDocRef.set({
+        'username': userCredential.user!.displayName ?? userCredential.user!.email ?? 'No Name',
+        'email': userCredential.user!.email ?? '',
+        'address': '',
+        'phone': '',
+        'favorite_people': [],
+      });
+    }
+
+    final userData = docSnapshot.data() as Map<String, dynamic>?;
+    List<dynamic> favoritePeople = userData?['favorite_people'] ?? [];
+
+    if (favoritePeople.isNotEmpty) {
+      Navigator.of(context).pushReplacementNamed('MainPage');
+    } else {
+      Navigator.of(context).pushReplacementNamed('AddPersonPage');
+    }
+  }
+
   void _handleLoginError(BuildContext context, FirebaseAuthException e) {
     String message;
     switch (e.code) {
@@ -113,43 +143,6 @@ class LoginPage extends StatelessWidget {
         break;
     }
     _showErrorDialog(context, message);
-  }
-
-  Future<void> _loginWithEmailAndPassword(BuildContext context) async {
-    try {
-      final String email = emailController.text;
-      final String password = passwordController.text;
-
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(email: email, password: password);
-
-      DocumentReference userDocRef = FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid);
-      DocumentSnapshot docSnapshot = await userDocRef.get();
-      
-      if (!docSnapshot.exists) {
-        await userDocRef.set({
-          'username': email,
-          'email': email,
-          'address': '',
-          'phone': '',
-          'favorite_people': [],
-        });
-      }
-
-      final userData = docSnapshot.data() as Map<String, dynamic>?; 
-      List<dynamic> favoritePeople = userData?['favorite_people'] ?? [];
-
-      if (favoritePeople.isNotEmpty) {
-        Navigator.of(context).pushReplacementNamed('MainPage');
-      } else {
-        Navigator.of(context).pushReplacementNamed('AddPersonPage');
-      }
-    } on FirebaseAuthException catch (e) {
-      print("FirebaseAuthException code: ${e.code}");
-      _handleLoginError(context, e);
-    } catch (e) {
-      _showErrorDialog(context, 'An unknown error occurred. Please try again.');
-      print(e);
-    }
   }
 
   void _showErrorDialog(BuildContext context, String message) {

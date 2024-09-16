@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cadoultau/src/pages/food_activity_interests_page.dart';
+
+// ProductPreferencesPage.dart
 class ProductPreferencesPage extends StatefulWidget {
   final String firstName;
   final String lastName;
@@ -7,7 +9,8 @@ class ProductPreferencesPage extends StatefulWidget {
   final String birthdate;
   final String address;
   final String phone;
-  final String sex; // Adaugă acest parametru
+  final String sex;
+  final String allTimeDate;
 
   ProductPreferencesPage({
     required this.firstName,
@@ -16,12 +19,15 @@ class ProductPreferencesPage extends StatefulWidget {
     required this.birthdate,
     required this.address,
     required this.phone,
-    required this.sex, // Adaugă acest parametru în constructor
+    required this.sex,
+    required this.allTimeDate,
   });
 
   @override
   _ProductPreferencesPageState createState() => _ProductPreferencesPageState();
 }
+
+
 
 class _ProductPreferencesPageState extends State<ProductPreferencesPage> {
   final List<String> productCategories = ["Parfumuri", "Bijuterii", "Cărți", "Gadgeturi"];
@@ -37,6 +43,7 @@ class _ProductPreferencesPageState extends State<ProductPreferencesPage> {
         address: widget.address,
         phone: widget.phone,
         preferredProducts: selectedProducts,
+        allTimeDate: widget.allTimeDate, // Transmitem allTimeDate mai departe
       ),
     ));
   }

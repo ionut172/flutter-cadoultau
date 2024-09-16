@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cadoultau/src/pages/summary_page.dart';
+import 'package:intl/intl.dart';
 
 class RelationshipDescriptionPage extends StatefulWidget {
   final String firstName;
@@ -14,7 +15,7 @@ class RelationshipDescriptionPage extends StatefulWidget {
   final List<String> foodPreferences;
   final List<String> activityPreferences;
   final List<String> interestPreferences;
-  
+  final String allTimeDate;
 
   RelationshipDescriptionPage({
     required this.firstName,
@@ -27,14 +28,82 @@ class RelationshipDescriptionPage extends StatefulWidget {
     required this.foodPreferences,
     required this.activityPreferences,
     required this.interestPreferences,
+    required this.allTimeDate, // Include allTimeDate aici
   });
 
   @override
   _RelationshipDescriptionPageState createState() => _RelationshipDescriptionPageState();
 }
 
+
 class _RelationshipDescriptionPageState extends State<RelationshipDescriptionPage> {
   final TextEditingController descriptionController = TextEditingController();
+  bool _extraDetailsChecked = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Descrierea Relației'),
+        backgroundColor: Colors.deepPurple,
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                'Descrie relația:',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.deepPurple),
+              ),
+              SizedBox(height: 10),
+              TextField(
+                controller: descriptionController,
+                decoration: InputDecoration(
+                  labelText: 'Descriere',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.description),
+                ),
+                maxLines: 5,
+              ),
+              SizedBox(height: 20),
+
+              // Checkbox pentru detalii extra
+              CheckboxListTile(
+                title: Text('Vreau detalii extra despre informații'),
+                value: _extraDetailsChecked,
+                onChanged: (bool? value) {
+                  setState(() {
+                    _extraDetailsChecked = value ?? false;
+                  });
+                },
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
+
+              // Finalizează și salvează
+              SizedBox(height: 20),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () => _finalStep(context),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
+                    backgroundColor: Colors.deepPurple,
+                    foregroundColor: Colors.white,
+                    textStyle: TextStyle(fontSize: 16.0),
+                  ),
+                  child: Text('Finalizează și Salvează'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   void _finalStep(BuildContext context) async {
     try {
@@ -50,6 +119,8 @@ class _RelationshipDescriptionPageState extends State<RelationshipDescriptionPag
             'birthdate': widget.birthdate,
             'address': widget.address,
             'phone': widget.phone,
+            'allTimeDate': widget.allTimeDate,
+            'extraDetails': _extraDetailsChecked,
           },
           'product_preferences': widget.preferredProducts,
           'food_activity': {
@@ -59,6 +130,7 @@ class _RelationshipDescriptionPageState extends State<RelationshipDescriptionPag
           },
           'relationship_description': {
             'description': descriptionController.text,
+           
           },
         };
 
@@ -66,7 +138,6 @@ class _RelationshipDescriptionPageState extends State<RelationshipDescriptionPag
           'favorite_people': FieldValue.arrayUnion([personData]),
         });
 
-        // Navighează la pagina de rezumat
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => SummaryPage(personData: personData),
@@ -91,59 +162,6 @@ class _RelationshipDescriptionPageState extends State<RelationshipDescriptionPag
             child: Text('OK'),
           ),
         ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Descrierea Relației'),
-        backgroundColor: Colors.deepPurple,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop();  // Se întoarce la pagina anterioară
-          },
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                'Descrie relația:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.deepPurple),
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: descriptionController,
-                decoration: InputDecoration(
-                  labelText: 'Descriere',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.description),
-                ),
-                maxLines: 5,
-              ),
-              SizedBox(height: 20),
-              Center(
-                child: ElevatedButton(
-                  onPressed: () => _finalStep(context),
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
-                    backgroundColor: Colors.deepPurple,
-                    foregroundColor: Colors.white,
-                    textStyle: TextStyle(fontSize: 16.0),
-                  ),
-                  child: Text('Finalizează și Salvează'),
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:cadoultau/src/pages/register_page.dart';
 import 'package:cadoultau/src/pages/add_person_page.dart';
 import 'package:cadoultau/src/pages/product_detail.dart';
 import 'package:cadoultau/src/pages/home_page.dart';
+import 'package:cadoultau/src/pages/relationship_page.dart';
 
 
 class Routes {
@@ -16,6 +17,7 @@ class Routes {
       'AddPersonPage': (context) => AddPersonPage(),
       '/detail': (context) => ProductDetailPage(),
       'HomePage': (context) => MyHomePage(),
+       '/relationship': (context) => RelationshipPage(),
 };
 
   }
